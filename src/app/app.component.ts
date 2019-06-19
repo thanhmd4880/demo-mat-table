@@ -30,12 +30,13 @@ const ELEMENT_DATA: PeriodicElement[] = [
 export class AppComponent implements OnInit, AfterViewInit {
     title = 'Material Table column Resize';
     @ViewChild(MatTable, {read: ElementRef} ) private matTableRef: ElementRef;
+    @ViewChild('matTable') private matTable: ElementRef;
 
     columns: any[] = [
         { field: 'position', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false },
-        { field: 'name', width: 70, index: 1, minWidth: 150, sticky: true, resizable: true, reorder: false },
+        { field: 'name', width: 70, index: 1, minWidth: 70, sticky: true, resizable: true, reorder: false },
         { field: 'weight', width: 800, index: 2, minWidth: 150, sticky: false, resizable: true, reorder: true },
-        { field: 'symbol', width: 1000, index: 3, minWidth: 150, sticky: false, resizable: true, reorder: true }
+        { field: 'symbol', width: 500, index: 3, minWidth: 150, sticky: false, resizable: true, reorder: true }
     ];
     displayedColumns: string[] = [];
     dataSource = ELEMENT_DATA;
@@ -61,6 +62,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.columns.forEach(( column) => {
             this.setColumnWidth(column);
         });
+        setTimeout(() => this.setFullWidth(), 20);
     }
 
     setTableResize(tableWidth: number) {
@@ -110,7 +112,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.currentResizeIndex = index;
         this.pressed = true;
         this.startX = event.pageX;
-        console.log(event.target.clientWidth);
         this.startWidth = event.target.parentElement.clientWidth;
         event.preventDefault();
         this.mouseMove(index);
@@ -162,6 +163,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             this.setColumnWidth(this.columns[index]);
             // this.columns[j].width = newWidth;
             // this.setColumnWidth(this.columns[j]);
+            this.setFullWidth();
         }
     }
 
@@ -170,6 +172,18 @@ export class AppComponent implements OnInit, AfterViewInit {
         columnEls.forEach(( el: HTMLDivElement ) => {
             el.style.width = column.width + 'px';
         });
+    }
+
+    setFullWidth() {
+        let total = 0;
+        for (let i = 0; i < this.columns.length; i++) {
+            total += this.columns[i].width;
+        }
+        const clientWidth = this.matTable['_elementRef'].nativeElement.clientWidth - 5;
+        if (total < clientWidth) {
+            this.columns[this.columns.length - 1].width += clientWidth - total;
+            this.setColumnWidth(this.columns[this.columns.length - 1]);
+        }
     }
 
     // @HostListener('window:resize', ['$event'])

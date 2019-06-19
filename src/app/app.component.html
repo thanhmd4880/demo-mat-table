@@ -1,5 +1,5 @@
 <div style="width: 100%; overflow: auto;">
-  <mat-table [dataSource]="dataSource" class="mat-elevation-z8" cdkDropListGroup>
+  <mat-table #matTable [dataSource]="dataSource" class="mat-elevation-z8" cdkDropListGroup>
     <ng-container *ngFor="let column of columns; let i = index" [matColumnDef]="column.field" [sticky]="column.sticky">
       <mat-header-cell *matHeaderCellDef
                        cdkDropList
