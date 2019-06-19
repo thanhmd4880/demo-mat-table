@@ -1,0 +1,26 @@
+<div style="width: 100%; overflow: auto;">
+  <mat-table [dataSource]="dataSource" class="mat-elevation-z8" cdkDropListGroup>
+    <ng-container *ngFor="let column of columns; let i = index" [matColumnDef]="column.field" [sticky]="column.sticky">
+      <mat-header-cell *matHeaderCellDef
+                       cdkDropList
+                       cdkDropListLockAxis="x"
+                       cdkDropListOrientation="horizontal"
+                       (cdkDropListDropped)="dropListDropped($event, i)"
+                       cdkDrag [cdkDragDisabled]="!column.reorder"
+                       [ngStyle]="{'width': column.width + 'px', 'minWidth': column.minWidth + 'px'}"
+                       (cdkDragStarted)="dragStarted($event, i)"
+                       [cdkDragData]="{name: column.field, columIndex: i}" >
+        <div [ngStyle]="{'width': column.width + 'px', 'minWidth': column.minWidth + 'px'}" class="placeholder" *cdkDragPlaceholder></div>
+        <div style="width: 100%; display: flex; flex-direction: row; justify-content: start; align-items: center">
+          <div fxFlex style="padding: 8px;width: 100%" cdkDragHandle>{{ column.field }}</div>
+          <div *ngIf="i !== this.columns.length - 1 && column.resizable" style="width: 16px; height: 56px; cursor: col-resize;" (mousedown)="onResizeColumn($event, i)"
+          ></div>
+        </div>
+      </mat-header-cell>
+
+      <mat-cell [ngStyle]="{'width': column.width + 'px', 'minWidth': column.minWidth + 'px'}" *matCellDef="let row" ><div style="padding: 8px">{{ row[column.field] }}</div></mat-cell>
+    </ng-container>
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  </mat-table>
+</div>
