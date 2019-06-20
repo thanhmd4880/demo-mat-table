@@ -42,10 +42,10 @@ mat-footer-row, mat-header-row, mat-row {
     border-bottom: 1px solid #e0e0e0;
     width: fit-content;
 }
-mat-header-cell.mat-table-sticky:nth-child(2) {
+mat-header-cell.mat-table-sticky:nth-child(3) {
     border-right: 1px solid #e0e0e0;
 }
-mat-cell.mat-table-sticky:nth-child(2) {
+mat-cell.mat-table-sticky:nth-child(3) {
     border-right: 1px solid #e0e0e0;
 }
 .cdk-drag-preview {
@@ -69,4 +69,33 @@ mat-cell.mat-table-sticky:nth-child(2) {
     border: dotted 3px #999;
     min-height: 42px;
     transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+:host {
+    justify-content: flex-start;
+    display: flex;
+    flex-direction: column;
+}
+
+app-scroll-container {
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+app-scroll-container.full {
+    flex-basis: auto;
+}
+
+app-scroll-container.part {
+    flex-basis: 200px;
+}
+
+.buttons {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+}
+mat-cell, mat-footer-cell, mat-header-cell {
+    padding-left: 20px !important;
+    box-sizing: border-box !important;
 }

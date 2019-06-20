@@ -1,6 +1,9 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { MatTable } from '@angular/material';
 import { CdkDragStart, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Sort, MatSort, MatTableDataSource } from '@angular/material';
+import { noop as _noop } from 'lodash';
+import {SelectionModel} from "@angular/cdk/collections";
 
 export interface PeriodicElement {
     name: string;
@@ -28,18 +31,19 @@ const ELEMENT_DATA: PeriodicElement[] = [
     styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, AfterViewInit {
-    title = 'Material Table column Resize';
+    @ViewChild(MatSort) sort: MatSort;
     @ViewChild(MatTable, {read: ElementRef} ) private matTableRef: ElementRef;
     @ViewChild('matTable') private matTable: ElementRef;
 
     columns: any[] = [
+        { field: 'select', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false },
         { field: 'position', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false },
         { field: 'name', width: 70, index: 1, minWidth: 70, sticky: true, resizable: true, reorder: false },
         { field: 'weight', width: 800, index: 2, minWidth: 150, sticky: false, resizable: true, reorder: true },
         { field: 'symbol', width: 500, index: 3, minWidth: 150, sticky: false, resizable: true, reorder: true }
     ];
     displayedColumns: string[] = [];
-    dataSource = ELEMENT_DATA;
+    dataSource : MatTableDataSource<Element>;
     pressed = false;
     currentResizeIndex: number;
     startX: number;
@@ -49,37 +53,21 @@ export class AppComponent implements OnInit, AfterViewInit {
     resizableMouseup: () => void;
     previousIndex: number;
 
+    selection = new SelectionModel<PeriodicElement>(true, []);
     constructor(
         private renderer: Renderer2
     ) { }
 
     ngOnInit() {
+        this.getData();
         this.setDisplayedColumns();
     }
 
     ngAfterViewInit() {
-        // this.setTableResize(this.matTableRef.nativeElement.clientWidth)
         this.columns.forEach(( column) => {
             this.setColumnWidth(column);
         });
         setTimeout(() => this.setFullWidth(), 20);
-    }
-
-    setTableResize(tableWidth: number) {
-        let totWidth = 0;
-        this.columns.forEach(( column) => {
-            totWidth += column.width;
-        });
-        const del = (tableWidth - 5) - totWidth;
-        this.columns.forEach((column) => {
-            // column.width *= scale;
-            if (column.index === this.columns.length - 1 && del > 0) {
-                column.width += del
-            }
-            this.setColumnWidth(column);
-        });
-        console.log(this.columns)
-
     }
 
     setDisplayedColumns() {
@@ -100,12 +88,6 @@ export class AppComponent implements OnInit, AfterViewInit {
             moveItemInArray(this.columns, this.previousIndex, index);
             this.setDisplayedColumns();
         }
-        console.log(this.columns)
-        // setTimeout( () => {
-        //   this.columns.forEach(( column) => {
-        //         this.setColumnWidth(column);
-        //     })
-        // }, 500)
     }
     onResizeColumn(event: any, index: number) {
         this.checkResizing(event, index);
@@ -119,7 +101,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     private checkResizing(event, index) {
         const cellData = this.getCellData(index);
-        if ( ( index === 0 ) || ( Math.abs(event.pageX - cellData.right) < cellData.width / 2 &&  index !== this.columns.length - 1 ) ) {
+        if (( index === 0 ) || ( Math.abs(event.pageX - cellData.right) < cellData.width / 2 &&  index !== this.columns.length - 1 )) {
             this.isResizingRight = true;
         } else {
             this.isResizingRight = false;
@@ -155,14 +137,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     setColumnWidthChanges(index: number, width: number) {
         const orgWidth = this.columns[index].width;
         const dx = width - orgWidth;
-        // console.log(width);
         if ( dx !== 0 ) {
-            // const j = ( this.isResizingRight ) ? index + 1 : index - 1;
-            // const newWidth = this.columns[j].width - dx;
             this.columns[index].width = width;
             this.setColumnWidth(this.columns[index]);
-            // this.columns[j].width = newWidth;
-            // this.setColumnWidth(this.columns[j]);
             this.setFullWidth();
         }
     }
@@ -186,9 +163,51 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
     }
 
-    // @HostListener('window:resize', ['$event'])
-    // onResize(event) {
-    //     this.setTableResize(this.matTableRef.nativeElement.clientWidth);
-    // }
+    @HostListener('window:scroll', ['$event'])
+    _windowScroll(event) {
+        const scroll = event.target.body;
+        if (scroll.clientHeight + scroll.scrollTop === scroll.scrollHeight) {
+            this.getData();
+        }
+    }
+
+    getData() {
+        const data: any = this.dataSource
+            ? [...this.dataSource.data, ...ELEMENT_DATA]
+            : ELEMENT_DATA;
+        this.dataSource = new MatTableDataSource(data);
+        this.dataSource.sort = this.sort;
+    }
+
+    ascending(value1, value2) {
+        return value1 > value2 ? - 1 : (value1 < value2 ? 1 : 0);
+    }
+
+    descending(value1, value2) {
+        return value1 < value2 ? - 1 : (value1 > value2 ? 1 : 0);
+    }
+
+
+    /** Whether the number of selected elements matches the total number of rows. */
+    isAllSelected() {
+        const numSelected = this.selection.selected.length;
+        const numRows = this.dataSource.data.length;
+        return numSelected === numRows;
+    }
+
+    /** Selects all rows if they are not all selected; otherwise clear selection. */
+    masterToggle() {
+        this.isAllSelected() ?
+            this.selection.clear() :
+            this.dataSource.data.forEach((row: any) => this.selection.select(row));
+    }
+
+    /** The label for the checkbox on the passed row */
+    checkboxLabel(row?: PeriodicElement): string {
+        if (!row) {
+            return `${this.isAllSelected() ? 'select' : 'deselect'} all`;
+        }
+        return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;
+    }
 
 }
