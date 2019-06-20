@@ -99,3 +99,29 @@ mat-cell, mat-footer-cell, mat-header-cell {
     padding-left: 20px !important;
     box-sizing: border-box !important;
 }
+
+:host ::ng-deep .mat-sort-header-arrow {
+    display: none!important;
+}
+
+mat-header-cell {
+    mat-icon {
+        display: none;
+    }
+}
+
+mat-header-cell[aria-sort="descending"], mat-header-cell[aria-sort="ascending"]  {
+    color: #0475d0;
+    font-weight: bold;
+    visibility: visible!important;
+    mat-icon {
+        display: initial;
+    }
+}
+mat-header-cell[aria-sort="ascending"] {
+    mat-icon {
+        display: initial;
+        transform: rotate(180deg);
+    }
+}
+

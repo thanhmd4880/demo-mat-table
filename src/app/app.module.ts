@@ -44,7 +44,7 @@ import {
   MatTooltipModule,
   MatTreeModule,
 } from '@angular/material';
-
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 import { AppComponent } from './app.component';
 
@@ -96,6 +96,7 @@ import { AppComponent } from './app.component';
     MatTooltipModule,
     MatTreeModule,
     ScrollingModule,
+    BrowserAnimationsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

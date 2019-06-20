@@ -36,11 +36,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     @ViewChild('matTable') private matTable: ElementRef;
 
     columns: any[] = [
-        { field: 'select', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false },
-        { field: 'position', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false },
-        { field: 'name', width: 70, index: 1, minWidth: 70, sticky: true, resizable: true, reorder: false },
-        { field: 'weight', width: 800, index: 2, minWidth: 150, sticky: false, resizable: true, reorder: true },
-        { field: 'symbol', width: 500, index: 3, minWidth: 150, sticky: false, resizable: true, reorder: true }
+        { field: 'select', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false, sortable: false },
+        { field: 'position', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false, sortable: false },
+        { field: 'name', width: 150, index: 1, minWidth: 150, sticky: true, resizable: true, reorder: false, sortable: true },
+        { field: 'weight', width: 800, index: 2, minWidth: 150, sticky: false, resizable: true, reorder: true, sortable: true},
+        { field: 'symbol', width: 500, index: 3, minWidth: 150, sticky: false, resizable: true, reorder: true, sortable: true}
     ];
     displayedColumns: string[] = [];
     dataSource : MatTableDataSource<Element>;
@@ -52,7 +52,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     resizableMousemove: () => void;
     resizableMouseup: () => void;
     previousIndex: number;
-
+    sorted = {field: 'name', sortType: 'desc'};
     selection = new SelectionModel<PeriodicElement>(true, []);
     constructor(
         private renderer: Renderer2
