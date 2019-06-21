@@ -1,6 +1,4 @@
-
-  <mat-table #matTable [dataSource]="dataSource" class="mat-elevation-z8" cdkDropListGroup matSort matSortDisableClear
-             matSortActive="weight" matSortDirection="desc">
+  <mat-table #matTable [dataSource]="dataSource" class="mat-elevation-z8" cdkDropListGroup>
 
     <ng-container *ngFor="let column of columns; let i = index" [matColumnDef]="column.field" [sticky]="column.sticky">
       <ng-container *ngIf="column.field === 'select'">
@@ -22,8 +20,6 @@
       </ng-container>
       <ng-container *ngIf="column.field !== 'select'">
         <mat-header-cell *matHeaderCellDef
-                         mat-sort-header
-                         disabled="{{!column.sortable}}"
                          cdkDropList
                          cdkDropListLockAxis="x"
                          cdkDropListOrientation="horizontal"
@@ -31,14 +27,14 @@
                          cdkDrag [cdkDragDisabled]="!column.reorder"
                          [ngStyle]="{'width': column.width + 'px', 'minWidth': column.minWidth + 'px'}"
                          (cdkDragStarted)="dragStarted($event, i)"
-                         [cdkDragData]="{name: column.field, columIndex: i}" >
+                         [cdkDragData]="{name: column.field, columIndex: i}"
+                         (click)="activeSort(i)">
+
           <div [ngStyle]="{'width': column.width + 'px', 'minWidth': column.minWidth + 'px'}" class="placeholder" *cdkDragPlaceholder></div>
           <div style="width: 100%; display: flex; flex-direction: row; justify-content: start; align-items: center">
-            <div fxFlex style="padding: 8px;width: 100%" cdkDragHandle>{{ column.field }}</div>
-            <div *ngIf="i !== this.columns.length - 1 && column.resizable" style="width: 16px; height: 56px; cursor: col-resize;" (mousedown)="onResizeColumn($event, i)"
-            ></div>
+            <div [ngStyle]="{'color': column.sort ? '#0475d0' : '#585757'}" class="header-title" style="padding: 8px;width: 100%; display: flex; align-items: center; " cdkDragHandle>{{ column.field }} <mat-icon class="sort-icon" [ngClass]="{'ascending': column.asc, 'descending': !column.asc}" *ngIf="column.sort">sort</mat-icon></div>
+            <div *ngIf="i !== this.columns.length - 1 && column.resizable" style="width: 16px; height: 56px; cursor: col-resize;" (mousedown)="onResizeColumn($event, i)"></div>
           </div>
-          <mat-icon *ngIf="column.sortable">sort</mat-icon>
         </mat-header-cell>
       </ng-container>
 

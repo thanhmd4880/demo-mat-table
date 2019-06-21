@@ -1,8 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { MatTable } from '@angular/material';
 import { CdkDragStart, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Sort, MatSort, MatTableDataSource } from '@angular/material';
-import { noop as _noop } from 'lodash';
+import { MatSort, MatTableDataSource } from '@angular/material';
 import {SelectionModel} from "@angular/cdk/collections";
 
 export interface PeriodicElement {
@@ -36,11 +35,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     @ViewChild('matTable') private matTable: ElementRef;
 
     columns: any[] = [
-        { field: 'select', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false, sortable: false },
-        { field: 'position', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false, sortable: false },
-        { field: 'name', width: 150, index: 1, minWidth: 150, sticky: true, resizable: true, reorder: false, sortable: true },
-        { field: 'weight', width: 800, index: 2, minWidth: 150, sticky: false, resizable: true, reorder: true, sortable: true},
-        { field: 'symbol', width: 500, index: 3, minWidth: 150, sticky: false, resizable: true, reorder: true, sortable: true}
+        { field: 'select', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false, sortable: false, asc: false, sort: false },
+        { field: 'position', width: 200, index: 0, minWidth: 150, sticky: true, resizable: false, reorder: false, sortable: false, asc: false, sort: false },
+        { field: 'name', width: 150, index: 1, minWidth: 150, sticky: true, resizable: true, reorder: false, sortable: true, asc: false, sort: true },
+        { field: 'weight', width: 800, index: 2, minWidth: 150, sticky: false, resizable: true, reorder: true, sortable: true, asc: false, sort: false},
+        { field: 'symbol', width: 500, index: 3, minWidth: 150, sticky: false, resizable: true, reorder: true, sortable: true, asc: false, sort: false}
     ];
     displayedColumns: string[] = [];
     dataSource : MatTableDataSource<Element>;
@@ -52,7 +51,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     resizableMousemove: () => void;
     resizableMouseup: () => void;
     previousIndex: number;
-    sorted = {field: 'name', sortType: 'desc'};
     selection = new SelectionModel<PeriodicElement>(true, []);
     constructor(
         private renderer: Renderer2
@@ -61,6 +59,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     ngOnInit() {
         this.getData();
         this.setDisplayedColumns();
+        this.sortData(this.columns[2].field, this.columns[2].asc )
     }
 
     ngAfterViewInit() {
@@ -101,11 +100,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     private checkResizing(event, index) {
         const cellData = this.getCellData(index);
-        if (( index === 0 ) || ( Math.abs(event.pageX - cellData.right) < cellData.width / 2 &&  index !== this.columns.length - 1 )) {
-            this.isResizingRight = true;
-        } else {
-            this.isResizingRight = false;
-        }
+        this.isResizingRight = (index === 0) || (Math.abs(event.pageX - cellData.right) < cellData.width / 2 && index !== this.columns.length - 1);
     }
 
     private getCellData(index: number) {
@@ -176,15 +171,14 @@ export class AppComponent implements OnInit, AfterViewInit {
             ? [...this.dataSource.data, ...ELEMENT_DATA]
             : ELEMENT_DATA;
         this.dataSource = new MatTableDataSource(data);
-        this.dataSource.sort = this.sort;
     }
 
     ascending(value1, value2) {
-        return value1 > value2 ? - 1 : (value1 < value2 ? 1 : 0);
+        return value1 > value2 ? 1 : (value1 < value2 ? -1 : 0);
     }
 
     descending(value1, value2) {
-        return value1 < value2 ? - 1 : (value1 > value2 ? 1 : 0);
+        return value1 > value2 ? -1 : (value1 < value2 ? 1 : 0);
     }
 
 
@@ -210,4 +204,33 @@ export class AppComponent implements OnInit, AfterViewInit {
         return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;
     }
 
+    activeSort(index) {
+        if (!this.columns[index].sortable) return;
+        if (!this.columns[index].sort) {
+            this.clearSort();
+            this.columns[index].sort = true;
+            this.columns[index].asc = true;
+            console.log(this.columns[index])
+        }
+        else {
+            this.columns[index].asc = !this.columns[index].asc;
+        }
+
+        this.sortData(this.columns[index].field, this.columns[index].asc);
+    }
+
+    sortData(field, asc) {
+        console.log(field, asc);
+        const data = this.dataSource.data;
+        data.sort((a, b) => asc ? this.ascending(a[field], b[field]) : this.descending(a[field], b[field]));
+        this.dataSource = new MatTableDataSource(data);
+    }
+
+
+    clearSort() {
+        for(let i = 0; i < this.columns.length; i++) {
+            this.columns[i].sort = false;
+            this.columns[i].asc = false;
+        }
+    }
 }
