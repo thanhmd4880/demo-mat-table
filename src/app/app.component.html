@@ -32,7 +32,7 @@
 
           <div [ngStyle]="{'width': column.width + 'px', 'minWidth': column.minWidth + 'px'}" class="placeholder" *cdkDragPlaceholder></div>
           <div style="width: 100%; display: flex; flex-direction: row; justify-content: start; align-items: center">
-            <div [ngStyle]="{'color': column.sort ? '#0475d0' : '#585757'}" class="header-title" style="padding: 8px;width: 100%; display: flex; align-items: center; " cdkDragHandle>{{ column.field }} <mat-icon class="sort-icon" [ngClass]="{'ascending': column.asc, 'descending': !column.asc}" *ngIf="column.sort">sort</mat-icon></div>
+            <div [ngStyle]="{'color': column.sort ? '#0475d0' : '#585757'}" class="header-title" style="padding: 8px;width: 100%; display: flex; align-items: center; " cdkDragHandle>{{ column.field }} <mat-icon *ngIf="column.sortable" class="sort-icon" [ngClass]="{'ascending': column.sort && column.asc, 'descending': column.sort && !column.asc}">sort</mat-icon></div>
             <div *ngIf="i !== this.columns.length - 1 && column.resizable" style="width: 16px; height: 56px; cursor: col-resize;" (mousedown)="onResizeColumn($event, i)"></div>
           </div>
         </mat-header-cell>
